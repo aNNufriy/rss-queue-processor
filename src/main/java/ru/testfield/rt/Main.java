@@ -1,36 +1,73 @@
 package ru.testfield.rt;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import ru.testfield.rt.config.ApplicationPropertiesProvider;
 import ru.testfield.rt.config.Properties;
-import ru.testfield.rt.es.ElasticAgent;
+import ru.testfield.rt.es.*;
 import ru.testfield.rt.model.Post;
 import ru.testfield.rt.rabbit.RabbitMQAgent;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 public class Main {
 
   public static void main(String[] argv) {
 
-    try {
-      Post post = new Post();
-      post.setBody("post body");
-      post.setDateAdded(LocalDateTime.now());
-      post.setId(UUID.randomUUID().toString());
-      String json = new ObjectMapper().writeValueAsString(post);
-      System.out.println("JSON: "+json);
-    }catch(Exception e){
-      System.out.println("Error");
-    }
-
     Properties properties = ApplicationPropertiesProvider.getInstance("properties.yml");
+
+    ElasticsearchMapper esMapper = new ElasticsearchMapperImpl(getObjectMapper());
+    ElasticsearchManager esManager = new ElasticsearchManagerImpl(getRestClient(properties),esMapper);
+
+//    try {
+//      Post post = new Post();
+//      post.setBody("post body");
+//      post.setDateAdded(LocalDateTime.now());
+//      post.setId(UUID.randomUUID().toString());
+//      String json = new ObjectMapper().writeValueAsString(post);
+//      System.out.println("JSON: "+json);
+//    }catch(Exception e){
+//      System.out.println("Error");
+//    }
 
     ElasticAgent elastiAgent = new ElasticAgent(properties);
     elastiAgent.put();
     RabbitMQAgent rabbitMQAgent = new RabbitMQAgent(properties,elastiAgent);
     rabbitMQAgent.init();
     rabbitMQAgent.consume();
+  }
+
+  private static ObjectMapper getObjectMapper() {
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    mapper.configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true);
+    mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+
+    mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+    return mapper;
+  }
+  private static RestHighLevelClient getRestClient(Properties properties){
+    RestClientBuilder builder = RestClient.builder(
+            new HttpHost(properties.getElasticHost(),
+            properties.getElasticPort(), "http")
+    );
+
+    return new RestHighLevelClient(builder);
   }
 }

@@ -18,7 +18,7 @@ public class NewsConsumer extends DefaultConsumer {
     public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
             throws IOException {
         String message = new String(body, "UTF-8");
-        System.out.println(" Received " + envelope.getRoutingKey() + ": '" + message + "'");
+        System.out.println(" Received from '" + envelope.getRoutingKey() + "': '" + message + "'");
         elasticAgent.put(message);
         try {
             Thread.sleep(10000);
