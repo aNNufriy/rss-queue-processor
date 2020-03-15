@@ -27,6 +27,19 @@ public class Post {
 
     private String source;
 
+    @Override
+    public String toString() {
+        return "Post{" +
+                "id='" + id + '\'' +
+                ", url='" + url + '\'' +
+                ", resourceId='" + resourceId + '\'' +
+                ", resourceName='" + resourceName + '\'' +
+                ", body='" + body + '\'' +
+                ", dateAdded=" + dateAdded +
+                ", source='" + source + '\'' +
+                '}';
+    }
+
     public String getId() {
         return id;
     }
@@ -82,4 +95,6 @@ public class Post {
     public void setSource(String source) {
         this.source = source;
     }
+
+
 }

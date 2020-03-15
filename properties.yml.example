@@ -1,0 +1,7 @@
+rabbitQueueName: 'queue_name'
+rabbitHost: 'rabbit_host'
+rabbitPort: 5672
+rabbitUser: 'admin'
+rabbitPassword: 'admin'
+elasticHost: 'rabbit_host'
+elasticPort: 9200

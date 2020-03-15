@@ -5,25 +5,15 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.http.HttpHost;
-import org.elasticsearch.client.Client;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import ru.testfield.rt.config.ApplicationPropertiesProvider;
 import ru.testfield.rt.config.Properties;
 import ru.testfield.rt.es.*;
 import ru.testfield.rt.model.Post;
-import ru.testfield.rt.rabbit.RabbitMQAgent;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.io.IOException;
 
 public class Main {
 
@@ -33,6 +23,13 @@ public class Main {
 
     ElasticsearchMapper esMapper = new ElasticsearchMapperImpl(getObjectMapper());
     ElasticsearchManager esManager = new ElasticsearchManagerImpl(getRestClient(properties),esMapper);
+
+    try {
+      esManager.queryForIds(Post.class,"postbox","BJ8h1HABrGv6483HXLMo")
+              .forEach(post -> System.out.println(post));
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
 
 //    try {
 //      Post post = new Post();
@@ -45,11 +42,9 @@ public class Main {
 //      System.out.println("Error");
 //    }
 
-    ElasticAgent elastiAgent = new ElasticAgent(properties);
-    elastiAgent.put();
-    RabbitMQAgent rabbitMQAgent = new RabbitMQAgent(properties,elastiAgent);
-    rabbitMQAgent.init();
-    rabbitMQAgent.consume();
+//    RabbitMQAgent rabbitMQAgent = new RabbitMQAgent(properties);
+//    rabbitMQAgent.init();
+//    rabbitMQAgent.consume();
   }
 
   private static ObjectMapper getObjectMapper() {

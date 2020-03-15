@@ -2,11 +2,8 @@ package ru.testfield.rt.rabbit;
 
 import com.rabbitmq.client.*;
 import ru.testfield.rt.config.Properties;
-import ru.testfield.rt.es.ElasticAgent;
 
 public class RabbitMQAgent {
-
-    ElasticAgent elasticAgent;
 
     private boolean connected;
 
@@ -21,7 +18,7 @@ public class RabbitMQAgent {
     private final String rabbitHost;
     private final int rabbitPort;
 
-    public RabbitMQAgent(Properties properties, ElasticAgent elasticAgent) {
+    public RabbitMQAgent(Properties properties) {
         this.factory = new ConnectionFactory();
         this.rabbitQueueName = properties.getRabbitQueueName();
         this.rabbitUser = properties.getRabbitUser();
@@ -29,7 +26,6 @@ public class RabbitMQAgent {
 
         this.rabbitHost = properties.getRabbitHost();
         this.rabbitPort = properties.getRabbitPort();
-        this.elasticAgent = elasticAgent;
     }
 
     public void init() {
@@ -57,7 +53,7 @@ public class RabbitMQAgent {
 
     public boolean consume() {
         try {
-            consumer = new NewsConsumer(channel, elasticAgent);
+            consumer = new NewsConsumer(channel);
             channel.basicConsume(rabbitQueueName, true, consumer);
         }catch(Exception e){
             return false;
