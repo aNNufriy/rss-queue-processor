@@ -1,8 +1,12 @@
 package ru.testfield.rt.es;
 
+import org.apache.http.HttpHost;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.elasticsearch.action.delete.DeleteAction;
 import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.delete.DeleteRequestBuilder;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetRequestBuilder;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -11,10 +15,13 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import ru.testfield.rt.config.Properties;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -26,9 +33,9 @@ public class ElasticsearchManagerImpl implements ElasticsearchManager {
 
     private final ElasticsearchMapper mapper;
 
-    public ElasticsearchManagerImpl(RestHighLevelClient restHighLevelClient, ElasticsearchMapper mapper) {
-        this.restHighLevelClient = restHighLevelClient;
-        this.mapper = mapper;
+    public ElasticsearchManagerImpl(Properties properties) {
+        this.mapper = new ElasticsearchMapperImpl();
+        this.restHighLevelClient = getRestClient(properties);
     }
 
     @Override
@@ -76,8 +83,28 @@ public class ElasticsearchManagerImpl implements ElasticsearchManager {
     }
 
     @Override
-    public String delete(DeleteRequest request) throws IOException {
-        logger.debug(request.toString());
-        return restHighLevelClient.delete(request, RequestOptions.DEFAULT).getId();
+    public String delete(String index, String id) throws IOException {
+        DeleteRequest request = new DeleteRequest(index,id);
+        DeleteResponse response = restHighLevelClient.delete(request, RequestOptions.DEFAULT);
+        System.out.println(response.status());
+        return response.getId();
+    }
+
+    @Override
+    public void close() {
+        if(this.restHighLevelClient!=null){
+            try {
+                this.restHighLevelClient.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static RestHighLevelClient getRestClient(Properties properties){
+        RestClientBuilder builder = RestClient.builder(
+                new HttpHost(properties.getElasticHost(),properties.getElasticPort(), "http")
+        );
+        return new RestHighLevelClient(builder);
     }
 }

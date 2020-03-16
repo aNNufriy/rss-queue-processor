@@ -21,15 +21,20 @@ public class Main {
 
     Properties properties = ApplicationPropertiesProvider.getInstance("properties.yml");
 
-    ElasticsearchMapper esMapper = new ElasticsearchMapperImpl(getObjectMapper());
-    ElasticsearchManager esManager = new ElasticsearchManagerImpl(getRestClient(properties),esMapper);
+    ElasticsearchManager esManager = new ElasticsearchManagerImpl(properties);
 
     try {
-      esManager.queryForIds(Post.class,"postbox","BJ8h1HABrGv6483HXLMo")
+      esManager.queryForIds(Post.class,
+              "postbox",
+              "BJ8h1HABrGv6483HXLMo",
+              "A58h1HABrGv6483HNLMm",
+              "BZ8h1HABrGv6483Hg7Nq")
               .forEach(post -> System.out.println(post));
+      esManager.delete("postbox","BZ8h1HABrGv6483Hg7Nq");
     } catch (IOException e) {
       e.printStackTrace();
     }
+    esManager.close();
 
 //    try {
 //      Post post = new Post();
@@ -47,22 +52,4 @@ public class Main {
 //    rabbitMQAgent.consume();
   }
 
-  private static ObjectMapper getObjectMapper() {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    mapper.configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true);
-    mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
-
-    mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-    return mapper;
-  }
-  private static RestHighLevelClient getRestClient(Properties properties){
-    RestClientBuilder builder = RestClient.builder(
-            new HttpHost(properties.getElasticHost(),
-            properties.getElasticPort(), "http")
-    );
-
-    return new RestHighLevelClient(builder);
-  }
 }

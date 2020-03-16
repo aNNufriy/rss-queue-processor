@@ -16,7 +16,11 @@ public class Post {
 
     @JsonProperty("rss_url")
     private String url;
+
+    @JsonProperty("id_resource")
     private String resourceId;
+
+    @JsonProperty("name_resource")
     private String resourceName;
     private String body;
 

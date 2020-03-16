@@ -1,8 +1,11 @@
 package ru.testfield.rt.es;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,8 +30,8 @@ public class ElasticsearchMapperImpl implements ElasticsearchMapper {
 
     private final ObjectMapper mapper;
 
-    public ElasticsearchMapperImpl(ObjectMapper mapper) {
-        this.mapper = mapper;
+    public ElasticsearchMapperImpl() {
+        this.mapper = getObjectMapper();
     }
 
     @Override
@@ -119,5 +122,16 @@ public class ElasticsearchMapperImpl implements ElasticsearchMapper {
                 }
             }
         });
+    }
+
+    private static ObjectMapper getObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true);
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        return mapper;
     }
 }
