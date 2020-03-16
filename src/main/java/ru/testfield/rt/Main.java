@@ -1,13 +1,5 @@
 package ru.testfield.rt;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import org.apache.http.HttpHost;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
-import org.elasticsearch.client.RestHighLevelClient;
 import ru.testfield.rt.config.ApplicationPropertiesProvider;
 import ru.testfield.rt.config.Properties;
 import ru.testfield.rt.es.*;
