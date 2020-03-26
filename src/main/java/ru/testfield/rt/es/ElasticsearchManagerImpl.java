@@ -2,16 +2,11 @@ package ru.testfield.rt.es;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHost;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.elasticsearch.action.delete.DeleteAction;
 import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetRequestBuilder;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -20,19 +15,19 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.testfield.rt.config.Properties;
-import ru.testfield.rt.model.Post;
 
 import java.io.IOException;
 import java.util.Collection;
 
 public class ElasticsearchManagerImpl implements ElasticsearchManager {
-    private static final Logger logger = LogManager.getLogger(ElasticsearchManagerImpl.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(ElasticsearchManagerImpl.class.getName());
 
     private RestHighLevelClient restHighLevelClient;
 
@@ -79,6 +74,13 @@ public class ElasticsearchManagerImpl implements ElasticsearchManager {
     public String index(String index, Object object) throws IOException {
         IndexRequest request = new IndexRequest(index);
         request.source(new ObjectMapper().writeValueAsString(object), XContentType.JSON);
+        return restHighLevelClient.index(request, RequestOptions.DEFAULT).getId();
+    }
+
+    @Override
+    public String index(String index, String jsonMessage) throws IOException {
+        IndexRequest request = new IndexRequest(index);
+        request.source(jsonMessage, XContentType.JSON);
         return restHighLevelClient.index(request, RequestOptions.DEFAULT).getId();
     }
 

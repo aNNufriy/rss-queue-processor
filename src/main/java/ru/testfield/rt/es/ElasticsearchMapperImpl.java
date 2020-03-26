@@ -6,16 +6,14 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -26,7 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ElasticsearchMapperImpl implements ElasticsearchMapper {
-    private final static Logger logger = LogManager.getLogger(ElasticsearchMapper.class.getName());
+    private final static Logger logger = LoggerFactory.getLogger(ElasticsearchMapper.class);
 
     private final ObjectMapper mapper;
 
@@ -99,7 +97,7 @@ public class ElasticsearchMapperImpl implements ElasticsearchMapper {
             try {
                 searchableField = clazz.getDeclaredField(name);
             } catch (NoSuchFieldException e) {
-                logger.log(Level.DEBUG,"Class '"+clazz.getName()+"' does not contain field '"+name+"'");
+                logger.debug("Class {} does not contain field {}",clazz.getName(),name);
             }
 
             if (searchableField == null) {

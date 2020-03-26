@@ -20,6 +20,7 @@ public interface ElasticsearchManager {
     HighlightBuilder createHighlighter(String field);
 
     String index(String index, Object object) throws IOException;
+    String index(String index, String jsonMessage) throws IOException;
     String update(UpdateRequest request) throws IOException;
     String delete(String index, String id) throws IOException;
 

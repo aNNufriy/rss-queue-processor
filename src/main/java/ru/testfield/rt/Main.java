@@ -1,9 +1,11 @@
 package ru.testfield.rt;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.testfield.rt.config.ApplicationPropertiesProvider;
 import ru.testfield.rt.config.Properties;
 import ru.testfield.rt.es.*;
-import ru.testfield.rt.model.Post;
+import ru.testfield.rt.rabbit.RabbitMQAgent;
 
 import java.io.IOException;
 
@@ -11,37 +13,22 @@ public class Main {
 
   public static void main(String[] argv) {
 
+    Logger logger = LoggerFactory.getLogger(Main.class);
+
+    logger.info("Starting...");
+
     Properties properties = ApplicationPropertiesProvider.getInstance("properties.yml");
 
     ElasticsearchManager esManager = new ElasticsearchManagerImpl(properties);
 
-    try {
-      esManager.queryForIds(Post.class,
-              "postbox",
-              "BJ8h1HABrGv6483HXLMo",
-              "A58h1HABrGv6483HNLMm",
-              "BZ8h1HABrGv6483Hg7Nq")
-              .forEach(post -> System.out.println(post));
-      esManager.delete("postbox","BZ8h1HABrGv6483Hg7Nq");
-    } catch (IOException e) {
+    RabbitMQAgent rabbitMQAgent = new RabbitMQAgent(properties);
+
+    try{
+      rabbitMQAgent.init(esManager);
+    }catch (IOException e){
+      System.out.println("Unable to initialize Rabbit agent");
+    } catch (Exception e) {
       e.printStackTrace();
     }
-    esManager.close();
-
-//    try {
-//      Post post = new Post();
-//      post.setBody("post body");
-//      post.setDateAdded(LocalDateTime.now());
-//      post.setId(UUID.randomUUID().toString());
-//      String json = new ObjectMapper().writeValueAsString(post);
-//      System.out.println("JSON: "+json);
-//    }catch(Exception e){
-//      System.out.println("Error");
-//    }
-
-//    RabbitMQAgent rabbitMQAgent = new RabbitMQAgent(properties);
-//    rabbitMQAgent.init();
-//    rabbitMQAgent.consume();
   }
-
 }

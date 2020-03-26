@@ -2,13 +2,12 @@ package ru.testfield.rt.rabbit;
 
 import com.rabbitmq.client.*;
 import ru.testfield.rt.config.Properties;
+import ru.testfield.rt.es.ElasticsearchManager;
 
-public class RabbitMQAgent {
+import java.io.IOException;
 
-    private boolean connected;
+public class RabbitMQAgent implements AutoCloseable {
 
-    private ConnectionFactory factory;
-    private Consumer consumer;
     private Channel channel;
     private String rabbitQueueName;
 
@@ -19,7 +18,6 @@ public class RabbitMQAgent {
     private final int rabbitPort;
 
     public RabbitMQAgent(Properties properties) {
-        this.factory = new ConnectionFactory();
         this.rabbitQueueName = properties.getRabbitQueueName();
         this.rabbitUser = properties.getRabbitUser();
         this.rabbitPassword = properties.getRabbitPassword();
@@ -28,36 +26,26 @@ public class RabbitMQAgent {
         this.rabbitPort = properties.getRabbitPort();
     }
 
-    public void init() {
-        this.initFactory();
-        this.connect();
-    }
-
-    private void initFactory(){
+    public void init(ElasticsearchManager esManager) throws IOException {
+        ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(rabbitHost);
         factory.setPort(rabbitPort);
         factory.setUsername(rabbitUser);
         factory.setPassword(rabbitPassword);
         factory.setAutomaticRecoveryEnabled(true);
-    }
-
-    private void connect() {
         try {
             Connection connection = factory.newConnection();
             channel = connection.createChannel();
             channel.basicQos(1);
-        }catch(Exception e){
+        } catch (Exception e) {
             throw new RuntimeException();
         }
+        Consumer consumer = new NewsConsumer(channel,esManager);
+        channel.basicConsume(rabbitQueueName, true, consumer);
     }
 
-    public boolean consume() {
-        try {
-            consumer = new NewsConsumer(channel);
-            channel.basicConsume(rabbitQueueName, true, consumer);
-        }catch(Exception e){
-            return false;
-        }
-        return true;
+    @Override
+    public void close() throws Exception {
+        this.channel.close();
     }
 }

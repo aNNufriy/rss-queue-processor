@@ -31,6 +31,9 @@ public class Post {
 
     private String source;
 
+    @JsonProperty("comment")
+    private String comment;
+
     @Override
     public String toString() {
         return "Post{" +
@@ -42,6 +45,14 @@ public class Post {
                 ", dateAdded=" + dateAdded +
                 ", source='" + source + '\'' +
                 '}';
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     public String getId() {
